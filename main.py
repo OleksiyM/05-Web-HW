@@ -31,7 +31,7 @@ async def get_exchange_rate(url: str):
             raise HttpGetError(f'Connection error when opening URL: {url}, Error: {e}')
 
 
-async def process_response_data(data: dict, currencies: tuple) -> dict:
+async def process_response_data(data: dict, currencies: tuple) -> dict | None:
     date_key = data['date']
     currency_dict = {
         currency['currency']: {
@@ -42,8 +42,14 @@ async def process_response_data(data: dict, currencies: tuple) -> dict:
         if currency['currency'] in currencies  # ('EUR', 'USD')
     }
     day_dict = {date_key: currency_dict}
-    logging.debug(f'Parsed data: {day_dict}')
-    return day_dict
+    # check empty currency_dict
+    if not currency_dict:
+        logging.warning(f'No data for currencies: {currencies}')
+        return None
+    else:
+        logging.debug(f'Parsed data: {day_dict}')
+        return day_dict
+
 
 
 async def get_data(days, currencies):
@@ -57,9 +63,9 @@ async def get_data(days, currencies):
             response = await get_exchange_rate(BANK_URL + day)
             # logger.debug(response)
             result = await process_response_data(response, currencies)
-            output_list.append(result)
+            output_list.append(result) if result else None
         except HttpGetError as e:
-            logger.error(f'Error: {e}')
+            logger.error(f'{e}')
     return output_list
 
 
