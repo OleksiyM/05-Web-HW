@@ -8,12 +8,8 @@ from time import time
 import aiohttp
 
 from DateHandler import DateHandler
+from constants import BANK_URL, STORAGE_DIR, STORAGE_DATA_FILE
 from utils import check_all_currencies, check_days, create_storage_dir, save_data_to_file
-from constants import BANK_URL, ROOT_DIR, STORAGE_DIR, STORAGE_DATA_FILE, BASE_CURRENCIES, ALL_CURRENCIES
-
-
-
-
 
 
 class HttpGetError(Exception):
@@ -35,7 +31,7 @@ async def get_exchange_rate(url: str):
             raise HttpGetError(f'Connection error when opening URL: {url}, Error: {e}')
 
 
-async def process_response_data(data: dict, currencies) -> dict:
+async def process_response_data(data: dict, currencies: tuple) -> dict:
     date_key = data['date']
     currency_dict = {
         currency['currency']: {
@@ -43,7 +39,7 @@ async def process_response_data(data: dict, currencies) -> dict:
             'purchase': currency['purchaseRate']
         }
         for currency in data['exchangeRate']
-        if currency['currency'] in currencies #('EUR', 'USD')
+        if currency['currency'] in currencies  # ('EUR', 'USD')
     }
     day_dict = {date_key: currency_dict}
     logging.debug(f'Parsed data: {day_dict}')
@@ -57,7 +53,7 @@ async def get_data(days, currencies):
     async for day in date_handler.dates_list(days):  # Use async for loop
         try:
             current_day += 1
-            logger.info(f"Getting data for {day} ({current_day}/{days+1})")
+            logger.info(f"Getting data for {day} ({current_day}/{days + 1})")
             response = await get_exchange_rate(BANK_URL + day)
             # logger.debug(response)
             result = await process_response_data(response, currencies)
