@@ -24,10 +24,12 @@
 
 1. Run the main script, optionally specifying the number of days to retrieve data for:
    ```bash
-   python main.py [days]
+   python main.py [days] [all]
    ```
    - If no `days` argument is provided, it defaults to retrieving data for the current day.
    - The maximum allowed value for `days` is 10.
+   - If `all` argument is provided, extended currencies list is used for output: `('EUR', 'USD', 'CHF', 'CZK',  'GBP', 'PLN')`.
+   - if `all` argument is not provided, it defaults to retrieving data for the base currencies list: `('EUR', 'USD')`
 
 2. The retrieved exchange rate data will be saved in the `storage/data.txt` file.
 
@@ -36,6 +38,8 @@
 - **main.py:** Contains the main execution logic, including asynchronous data retrieval and storage.
 - **utils.py:** Houses utility functions for input validation, directory creation, and data saving.
 - **DateHandler.py:** Defines a class for generating lists of dates for data retrieval.
+- **Constants.py:** This file contains configuration constants for the project.
+
 
 ## Contributing
 

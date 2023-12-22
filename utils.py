@@ -1,7 +1,18 @@
 import json
 import logging
 
+from constants import BASE_CURRENCIES, ALL_CURRENCIES
+
 logger = logging.getLogger(__name__)
+
+
+def check_all_currencies(param: str) -> list:
+    if param.lower() == 'all':
+        logger.debug(f"Using all currencies for exchange rate data retrieval: {ALL_CURRENCIES}")
+        return ALL_CURRENCIES
+    else:
+        logger.debug(f"Using base currencies for exchange rate data retrieval: {BASE_CURRENCIES}")
+        return BASE_CURRENCIES
 
 
 def check_days(days: str) -> int:

@@ -3,20 +3,17 @@ import logging
 import os
 import platform
 import sys
-from pathlib import Path
 from time import time
 
 import aiohttp
 
 from DateHandler import DateHandler
-from utils import check_days, create_storage_dir, save_data_to_file
+from utils import check_all_currencies, check_days, create_storage_dir, save_data_to_file
+from constants import BANK_URL, ROOT_DIR, STORAGE_DIR, STORAGE_DATA_FILE, BASE_CURRENCIES, ALL_CURRENCIES
 
-# https://api.privatbank.ua/#p24/exchangeArchive
-BANK_URL = 'https://api.privatbank.ua/p24api/exchange_rates?date='
 
-ROOT_DIR = Path()
-STORAGE_DIR = ROOT_DIR.joinpath('storage')
-STORAGE_DATA_FILE = STORAGE_DIR.joinpath('data.txt')
+
+
 
 
 class HttpGetError(Exception):
@@ -38,7 +35,7 @@ async def get_exchange_rate(url: str):
             raise HttpGetError(f'Connection error when opening URL: {url}, Error: {e}')
 
 
-async def process_response_data(data: dict) -> dict:
+async def process_response_data(data: dict, currencies) -> dict:
     date_key = data['date']
     currency_dict = {
         currency['currency']: {
@@ -46,14 +43,14 @@ async def process_response_data(data: dict) -> dict:
             'purchase': currency['purchaseRate']
         }
         for currency in data['exchangeRate']
-        if currency['currency'] in ('EUR', 'USD')
+        if currency['currency'] in currencies #('EUR', 'USD')
     }
     day_dict = {date_key: currency_dict}
     logging.debug(f'Parsed data: {day_dict}')
     return day_dict
 
 
-async def get_data(days):
+async def get_data(days, currencies):
     date_handler = DateHandler()
     output_list = []
     current_day = 0
@@ -63,7 +60,7 @@ async def get_data(days):
             logger.info(f"Getting data for {day} ({current_day}/{days+1})")
             response = await get_exchange_rate(BANK_URL + day)
             # logger.debug(response)
-            result = await process_response_data(response)
+            result = await process_response_data(response, currencies)
             output_list.append(result)
         except HttpGetError as e:
             logger.error(f'Error: {e}')
@@ -73,10 +70,12 @@ async def get_data(days):
 async def main():
     days = check_days(sys.argv[1]) if len(sys.argv) > 1 else 0
 
+    cur = check_all_currencies(sys.argv[-1])
+
     start_time = time()
     logger.debug(f"Start time: {start_time}")
 
-    result = await get_data(days)
+    result = await get_data(days, cur)
 
     logger.debug(f"Result data: {result}")
 
