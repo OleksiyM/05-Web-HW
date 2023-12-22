@@ -22,7 +22,7 @@
 
 ## Usage
 
-1. Run the main script, optionally specifying the number of days to retrieve data for:
+1. Run the main script, optionally specifying the number of days to retrieve data for and currencies list:
    ```bash
    python main.py [days] [all]
    ```
